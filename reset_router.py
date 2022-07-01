@@ -3,15 +3,11 @@ import pyautogui as gui
 
 gui.PAUSE = 0.1
 gui.FAILSAFE = True
-prefix = "Chrome " 
-router = "http://192.168.15.3 "
-suffix = " --new-window\n"
-password="2017-iso9001D"
+prefix = "Chrome http://" 
+suffix = "  --new-window\n"
 
-def sTab(number=1):
-    while (number>0):
-        gui.hotkey("tab")
-        number = number - 1
+router = "192.168.15.3"
+password="2017-iso9001D"
 
 def step(image,action="click",btn="left",attempts=5):
     att = 1 # first time

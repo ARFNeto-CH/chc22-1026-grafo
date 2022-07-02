@@ -67,20 +67,20 @@ def reset_VIVO(router,password):
         return evt
     print("No User")
     return 0
-    evt.append(step("100 Gerenc.jpg",action="move"))
-    gui.hotkey("enter")
-    time.sleep(1)
-    gui.typewrite("admin")
-    gui.hotkey("TAB")
-    gui.typewrite(password)
-    evt.append(step("110 Reinicia.jpg"))
-    time.sleep(1)
-    evt.append(step("120 Reinicia.jpg"))
-    evt.append(step("130 Confirma.jpg"))
-    gui.hotkey("F11")
-    time.sleep(4)
-    gui.hotkey("alt","F4") # end session
-    return evt
+    #evt.append(step("100 Gerenc.jpg",action="move"))
+    #gui.hotkey("enter")
+    #time.sleep(1)
+    #gui.typewrite("admin")
+    #gui.hotkey("TAB")
+    #gui.typewrite(password)
+    #evt.append(step("110 Reinicia.jpg"))
+    #time.sleep(1)
+    #evt.append(step("120 Reinicia.jpg"))
+    #evt.append(step("130 Confirma.jpg"))
+    #gui.hotkey("F11")
+    #time.sleep(4)
+    #gui.hotkey("alt","F4") # end session
+    #return evt
 
 #print(
 #    "First router:  Attempts ",

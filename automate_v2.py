@@ -1,6 +1,7 @@
 import time
 import pyautogui as gui
 from os import path
+from os import getenv
 
 class Roteador:
 
@@ -23,19 +24,28 @@ class Roteador:
     for item in self.roteiro:
         if ( path.exists(self.folder + '/' + item)):
             ok += 1
-    return ok == len(self.roteiro)
+    if (ok != len(self.roteiro)): return False
+    print("Check: Todos os arquivos presentes")
+    senha = getenv(self.password,default="Nao encontrado")
+    if ( senha == "Nao encontrado"):
+        print("Senha nao encontrada")
+        return False
+    self.password = senha
+    print("Check: Senha de acesso definida para",self.address)
+    return True
+
 
   def Step(self,img,action="click",\
     btn="left",    attempts=3,     confidence=.8):
     att = 1 # first time
     image = self.folder + '\\' + img
     while (att<attempts):
-        location = gui.locateCenterOnScreen(image, confidence=.8 )
+        location = gui.locateCenterOnScreen(image,confidence=confidence )
         if ( location == None ):
            time.sleep(1.2) # retry time
            att += 1 # count this
            continue
-        print(image," found!")
+        #print(image," found!")
         if ( action == "move"):
             gui.moveTo(location)
         else:
@@ -50,7 +60,11 @@ class Roteador:
     return att
   
   def Automate(self):
-    print("Reiniciando equipamento em",self.address)
+    if (self.Check()):
+      print("Reiniciando equipamento em",self.address)
+    else:
+      print("Erro: Faltam arquivos. Cancelando...")
+      return False
     save =  gui.PAUSE
     gui.PAUSE = 1
     prefix = "Chrome http://" 
@@ -84,14 +98,7 @@ class Roteador:
 # RESET VIVO
 # 
 class VIVO(Roteador):
-
-#   def __init__( self, endereco, senha, pasta, roteiro ):
-#     Roteador.address = endereco
-#     Roteador.password = senha 
-#     self.folder = pasta
-#     self.roteiro = roteiro
   def abre_sessao(self):
-    print("Reiniciando equipamento em",self.address)
     save =  gui.PAUSE
     gui.PAUSE = 1
     prefix = "Chrome http://" 
@@ -101,7 +108,6 @@ class VIVO(Roteador):
     gui.typewrite(arg)
     time.sleep(5.0)
     gui.hotkey("F11")
-    print("Browser ok")
     # esta online?
     res = self.Step(self.roteiro[0],action="none")
     # retorna 1 se ja esta online
@@ -142,9 +148,22 @@ class VIVO(Roteador):
     gui.PAUSE = save
     return True
      
-  def reset_VIVO(self):  
+  def Automate(self,simulado=False): 
+    
+    if ( simulado ):
+        print("Simulado VIVO: vai retornar antes de reiniciar")
+        act = "none"
+    else:
+        print("ATENCAO: vai reiniciar o servico da VIVO")
+        act = "click"
+
+    if (self.Check()):
+      print("Reiniciando equipamento em",self.address)
+    else:
+      print("Erro: Faltam arquivos. Cancelando...")
+      return False
+
     res = self.abre_sessao()
-    print("Sessao aberta: ", res)
     if ( not res ):
         print("Erro ao tentar abrir sessao")
         return False
@@ -152,12 +171,12 @@ class VIVO(Roteador):
     print("Sessao aberta no roteador. Prosseguindo em 6s...")
     time.sleep(6.0)
 
-    for i in range (3,5):
+    for i in range (3,6):
         res = self.Step(self.roteiro[i]);
         if ( res == 0):
             break
-    time.sleep(0.5)
-    res = self.Step(self.roteiro[5],action="none");
+    time.sleep(2.0)
+    res = self.Step(self.roteiro[6],act);
     if ( res == 1):
         print("Posicionado no RESET")
     else:
@@ -166,6 +185,64 @@ class VIVO(Roteador):
     time.sleep(3)
     gui.hotkey("alt","F4") # end session
     return True
+
+
+class AX10(Roteador):  
+  def Automate(self):
+
+    if (self.Check()):
+      print("Reiniciando TP-Link AX10 em",self.address)
+    else:
+      print("Erro: Faltam arquivos. Cancelando...")
+      return False
+    save =  gui.PAUSE
+    gui.PAUSE = 1
+    prefix = "Chrome http://" 
+    suffix = "  --new-window\n"
+    arg = prefix+self.address+suffix
+    gui.hotkey("win","r")
+    gui.typewrite(arg)
+    time.sleep(1.)
+    gui.hotkey("F11")
+
+    # tenta a tela de login. Nem sempre acessa
+    # se nao estiver diretamente conectado ao
+    # aparelho
+    res = self.Step(self.roteiro[0],action="none")
+    if ( res == 0 ):
+        print("Sem acesso ao login!")
+        time.sleep(2.0)
+        gui.hotkey("F11")
+        gui.hotkey("alt","F4") # end session
+        return False
+
+    res = self.Step(self.roteiro[1])
+    if ( res == 0 ):
+        print("Sem acesso ao login!")
+        time.sleep(2.0)
+        gui.hotkey("F11")
+        gui.hotkey("alt","F4") # end session
+        return False
+    gui.typewrite(self.password)
+    gui.hotkey("ENTER")
+    # session is open
+    done = 2
+    steps = len(self.roteiro)
+    for item in range(2,steps):
+        res = self.Step(self.roteiro[item])
+        time.sleep(1.3)
+        if ( res < 1 ):
+            break
+        done +=1
+    if ( done == steps ):
+        print("RESET OK!")
+    else:
+        print("Erro no RESET!")
+    time.sleep(2.0)
+    gui.hotkey("F11")
+    gui.hotkey("alt","F4") # end session
+
+
 
 
 

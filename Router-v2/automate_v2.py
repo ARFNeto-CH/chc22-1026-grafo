@@ -1,5 +1,6 @@
 import time
 import pyautogui as gui
+import netifaces as net
 from os import path
 from os import getenv
 
@@ -10,14 +11,12 @@ class Roteador:
     self.password = senha 
     self.folder = pasta
     self.roteiro = roteiro
-
+    
   def Show(self):
     print("Roteador:", self.address )
     print("   senha: ", self.password )
     print("   pasta: ", self.folder )
     print("Roteiro tem ", len(self.roteiro), "passos:")
-    for item in self.roteiro:
-        print("    ", item)
 
   def Check(self):
     ok = 0
@@ -33,7 +32,6 @@ class Roteador:
     self.password = senha
     print("Check: Senha de acesso definida para",self.address)
     return True
-
 
   def Step(self,img,action="click",\
     btn="left",    attempts=3,     confidence=.8):
@@ -93,6 +91,8 @@ class Roteador:
     time.sleep(0.5)
     gui.hotkey("alt","F4") # end session
 
+  def Gateway(self):
+    return net.gateways()['default'][2][0];
 
 #
 # RESET VIVO
@@ -242,6 +242,123 @@ class AX10(Roteador):
     gui.hotkey("F11")
     gui.hotkey("alt","F4") # end session
 
+
+#
+# RESET do gateway CLARO NET
+# 
+class CLARO(Roteador):
+
+  def __init__( self, arquivo, pasta, roteiro ):
+    gateway = self.Gateway();
+    print ( "Gateway: ", gateway);
+    with open(arquivo, encoding="utf-8") as f:
+        self.usuario = f.readline().split("\n")[0];
+        self.password = f.readline().split("\n")[0];
+    print( "Usuario: ", self.usuario );
+    print( "Senha: ", self.password );
+    print( "pasta: ", pasta);
+    print( "roteiro: ", roteiro);
+    super(CLARO,self).__init__( gateway, self.password, pasta, roteiro)
+
+  def Check(self):
+    ok = 0
+    for item in self.roteiro:
+        if ( path.exists(self.folder + '/' + item)):
+            ok += 1
+    if (ok != len(self.roteiro)): return False
+    print("Check: Todos os arquivos presentes")
+    return True
+
+  def abre_sessao(self):
+    save =  gui.PAUSE
+    gui.PAUSE = 1
+    prefix = "Chrome http://" 
+    suffix = "  --new-window\n"
+    arg = prefix+self.address+suffix
+    gui.hotkey("win","r")
+    gui.typewrite(arg)
+    time.sleep(5.0)
+    gui.hotkey("F11")
+    # esta online?
+    res = self.Step(self.roteiro[0],action="click")
+    # usa TAB shift TAB para voltar para digitar o usuario
+    # retorna 1 se ja esta online
+
+    print( "Usuario: ", self.usuario );
+    print( "Senha: ", self.password );
+
+    gui.hotkey("TAB")
+    gui.hotkey("SHIFT","TAB")
+    gui.typewrite(self.usuario);
+    gui.hotkey("TAB")
+    gui.typewrite(self.password);
+    res = self.Step(self.roteiro[1],action="click");
+    return res;
+     
+  def Automate(self,simulado=False): 
+    
+    if ( simulado ):
+        print("Simulado CLARO")
+        act = "none"
+    else:
+        print("ATENCAO: vai reprogramar o ROTEADOR da CLARO NET")
+        act = "click"
+
+    if (self.Check()):
+      print("Reiniciando equipamento em",self.address)
+    else:
+      print("Erro: Faltam arquivos. Cancelando...")
+      return False
+
+    res = self.abre_sessao()
+    if ( not res ):
+        print("Erro ao tentar abrir sessao")
+        return False
+
+    print("Sessao aberta no roteador. Prosseguindo em 3s...")
+    time.sleep(3.0)
+
+    res = self.Step(self.roteiro[2]);
+    if ( res == 0):
+        return False;
+    print( self.roteiro[2], "ok");
+
+    res = self.Step(self.roteiro[3]);
+    if ( res == 0):
+        return False;
+    print( self.roteiro[3], "ok");
+
+    # define o endereco do gateway
+    gui.hotkey("TAB")
+    gui.hotkey("TAB")
+    gui.hotkey("TAB")
+    gui.typewrite('10'); # endereco DHCP
+    gui.hotkey("TAB");
+    gui.typewrite('0');
+    gui.hotkey("TAB");
+    gui.typewrite('138');
+    gui.hotkey("TAB");
+    gui.typewrite('1'); # inicio DHCP
+
+    # muda o tempo do lease do dhcp
+    gui.hotkey("TAB")
+    gui.hotkey("TAB")
+    gui.hotkey("TAB")
+    gui.typewrite('224');
+ 
+    gui.hotkey("TAB")
+    gui.typewrite('420');
+    
+    res = self.Step(self.roteiro[4]);
+    if ( res == 0):
+        return False;
+    print( self.roteiro[4], "ok");
+
+
+    gui.hotkey("F11")
+    time.sleep(4)
+    gui.hotkey("alt","F4") # end session
+    return True
 
 
 

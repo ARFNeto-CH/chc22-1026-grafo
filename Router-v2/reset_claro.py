@@ -10,7 +10,8 @@ teste = CLARO("claro-parm.txt", "CLARO",
         '000-REDES.jpg',
         '100-LAN-DHCP.jpg',
         '300-start-dhcp.jpg',
-        '500-aplicar ajustes.jpg'
+        '500-aplicar ajustes.jpg',
+        '600-sair.jpg'
     ]);
 
 if (teste.Automate(simulado=False) ):

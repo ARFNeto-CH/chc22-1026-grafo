@@ -347,19 +347,34 @@ class CLARO(Roteador):
     gui.typewrite('224');
  
     gui.hotkey("TAB")
-    gui.typewrite('420');
+    gui.typewrite('420'); // lease time
     
     res = self.Step(self.roteiro[4]);
     if ( res == 0):
         return False;
     print( self.roteiro[4], "ok");
+    
+    if ( simulado  ):
+        print("Saindo da simulacao...")
+        return True
 
+    res = self.Step(self.roteiro[5]);
+    if ( res == 0):
+        print("Erro ao aplicar ajustes...")
+        return False;
 
+    print( self.roteiro[6], "tentando...");
+    res = self.Step(self.roteiro[6]);
+    if ( res == 0):
+        print("Erro ao sair da interface:...")
+        return False;
+
+    print( self.roteiro[6], "ok");
+    time.sleep(3.0)
     gui.hotkey("F11")
     time.sleep(4)
     gui.hotkey("alt","F4") # end session
     return True
-
 
 
 

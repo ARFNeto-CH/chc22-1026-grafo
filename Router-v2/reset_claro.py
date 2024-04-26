@@ -14,7 +14,7 @@ teste = CLARO("claro-parm.txt", "CLARO",
         '600-sair.jpg'
     ]);
 
-if (teste.Automate(simulado=False) ):
+if (teste.Automate(simulado=True) ):
     print("Reset OK!...")
 else:
     print("Erro! Verifique...")

@@ -43,7 +43,7 @@ class Roteador:
            time.sleep(1.2) # retry time
            att += 1 # count this
            continue
-        #print(image," found!")
+        print(image," found!")
         if ( action == "move"):
             gui.moveTo(location)
         else:
@@ -54,7 +54,8 @@ class Roteador:
         return att
     # estourou o numero de tentativas
     if ( location == None ):
-        return 0
+      print(image," not found!")
+      return 0
     return att
   
   def Automate(self):
@@ -338,7 +339,7 @@ class CLARO(Roteador):
     gui.hotkey("TAB");
     gui.typewrite('138');
     gui.hotkey("TAB");
-    gui.typewrite('1'); # inicio DHCP
+    gui.typewrite('1'); # inicio DHCP 
 
     # muda o tempo do lease do dhcp
     gui.hotkey("TAB")
@@ -347,7 +348,7 @@ class CLARO(Roteador):
     gui.typewrite('224');
  
     gui.hotkey("TAB")
-    gui.typewrite('420'); // lease time
+    gui.typewrite('420'); 
     
     res = self.Step(self.roteiro[4]);
     if ( res == 0):
